@@ -129,13 +129,10 @@ def query(db_path='/data/transactions.db'):
 
         output_directory = 'output'
         output_file_path = os.path.join(output_directory, 'uniq_users_purchases.csv')
-
-        # if not os.path.exists(output_directory):
-        #     
+    
         os.makedirs(output_directory, exist_ok=True)
         logging.info(f"Директория {output_directory} успешно создана")
 
-        # logging.info(f"Директория {output_directory} успешно создана")
         # Сохраняем DataFrame в CSV-файл
         df.to_csv(output_file_path, index=False)
         logging.info(f"Результаты запроса успешно сохранены в {output_file_path}")
