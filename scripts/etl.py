@@ -43,7 +43,7 @@ def transform(df):
                         'transaction_date': 'first',
                         'transaction_type': 'first'   
                     })
-        logging.info("Данные сгруппированы по transaction_id', 'user_id")
+        logging.info("Данные сгруппированы по 'transaction_id', 'user_id'")
         
         # Регулярные выражение для приведения к общему формату
         df['transaction_type'] = df['transaction_type'].replace({
@@ -110,6 +110,42 @@ def load(df, db_path='/data/transactions.db'):
         sys.exit(1)
 
 
+def query(db_path='/data/transactions.db'):
+    try:
+        logging.info("Начало аналитического запроса")
+
+        import os
+        import pandas as pd
+
+        engine = create_engine(f'sqlite:///{db_path}')
+        conn = engine.connect()
+        logging.info("Подключение к базе данных успешно установлено")
+
+        with open('scripts/uniq_users_purchases.sql', 'r') as file:
+            sql_query = file.read()
+
+        df = pd.read_sql_query(sql_query, conn)
+        logging.info("Запрос успешно выполнен")
+
+        output_directory = 'output'
+        output_file_path = os.path.join(output_directory, 'uniq_users_purchases.csv')
+
+        # if not os.path.exists(output_directory):
+        #     
+        os.makedirs(output_directory, exist_ok=True)
+        logging.info(f"Директория {output_directory} успешно создана")
+
+        # logging.info(f"Директория {output_directory} успешно создана")
+        # Сохраняем DataFrame в CSV-файл
+        df.to_csv(output_file_path, index=False)
+        logging.info(f"Результаты запроса успешно сохранены в {output_file_path}")
+
+        conn.close()
+
+    except Exception as e:
+        logging.error(f"Ошибка на этапе выполнения аналитического: {e}")
+        sys.exit(1)
+
 def main():
     excel_file = '../data/transactions.xlsx'
     
@@ -118,6 +154,8 @@ def main():
     df_transformed = transform(df)
     
     load(df_transformed)
+
+    query()
 
 if __name__ == "__main__":
     main()
